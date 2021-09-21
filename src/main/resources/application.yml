@@ -12,3 +12,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+url:
+  base: http://localhost:8080/api
