@@ -2,7 +2,9 @@ package com.example.spring_security_jwt_auth.security.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,7 +51,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
       HttpServletRequest request,
       HttpServletResponse response,
       FilterChain chain,
-      Authentication authentication) {
+      Authentication authentication) throws IOException {
 
     User user = (User) authentication.getPrincipal();
     Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
@@ -70,8 +74,14 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             .withExpiresAt(new Date(System.currentTimeMillis() + 40 * 60 * 1000))
             .withIssuer(request.getRequestURI())
             .sign(algorithm);
+//
+//    response.setHeader("access_token", accessToken);
+//    response.setHeader("refresh_token", refreshToken);
 
-    response.setHeader("access_token", accessToken);
-    response.setHeader("refresh_token", refreshToken);
+    Map<String, String> tokens = new HashMap<>();
+    tokens.put("access_token", accessToken);
+    tokens.put("refresh_token", refreshToken);
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    new ObjectMapper().writeValue(response.getOutputStream(), tokens);
   }
 }
